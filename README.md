@@ -1,12 +1,18 @@
 # Machine-learning-project
 
 
-English Language Identification Using NLP
+# English Language Identification Using NLP
+
 Project Team 20
+
 Members
+
 Tan Jian Jie
+
 Celine Leong Jia Yi
+
 Anderson Phua Tai Dah
+
 Chua Zhen Xun
 
 Background
