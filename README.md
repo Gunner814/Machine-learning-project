@@ -3,9 +3,9 @@
 
 # English Language Identification Using NLP
 
-Project Team 20
+# Project Team 20
 
-Members
+# Members
 
 Tan Jian Jie
 
@@ -15,16 +15,16 @@ Anderson Phua Tai Dah
 
 Chua Zhen Xun
 
-Background
+# Background
 Natural Language Processing (NLP) sits at the crossroads of computer science, artificial intelligence, and linguistics, emphasizing the interaction between computers and humans using natural languages. Our project focuses on enabling computers to understand and interpret human language in English, aiming to improve the accuracy and efficiency of language identification in spoken communication.
 
-Project Overview
+# Project Overview
 This project aims to train a Neural Language Processing (NLP) model specifically for English, enhancing speech recognition systems' capabilities for more seamless interaction between humans and machines. Our approach focuses on developing models that can accurately identify and process English language nuances from audio inputs.
 
-Data
+# Data
 Our dataset comprises audio clips selected to represent a wide range of linguistic nuances within the English language. These recordings will serve as the primary training material for our NLP model, focusing on achieving high precision in language recognition for improved speech processing.
 
-Algorithms
+# Algorithms
 We intend to explore two advanced algorithmic approaches for English language identification:
 
 Recurrent Neural Network with Long Short-Term Memory (RNN with LSTM)
@@ -34,9 +34,10 @@ Convolutional Neural Network with Long Short-Term Memory (CNN with LSTM)
 
 Combines CNN's robust feature extraction capabilities with LSTM's adeptness at sequence modeling, offering a comprehensive solution for language identification challenges across various accents and contexts.
 Justification for Choosing CNN with LSTM
+
 CNNs are chosen for their unparalleled pattern recognition abilities, crucial for identifying the unique phonetic patterns and intonations of the English language. Their efficiency with large datasets is particularly advantageous for our project, which relies on extensive audio samples to cover a broad spectrum of linguistic nuances.
 
-Timeline
+# Timeline
 
 Week 8: Proposal documentation.
 
