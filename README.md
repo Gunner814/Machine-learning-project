@@ -1,11 +1,11 @@
 # Machine-learning-project
 
 
-# English Language Identification Using NLP
+English Language Identification Using NLP
 
-# Project Team 20
+Project Team 20
 
-# Members
+Members
 
 Tan Jian Jie
 
