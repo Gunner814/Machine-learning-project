@@ -1,161 +1,148 @@
 # import os
-# import pandas as pd
 # import numpy as np
+# import pandas as pd
 # import librosa
-# import matplotlib.pyplot as plt
 # import tensorflow as tf
-# from tensorflow.keras.models import Sequential
-# from tensorflow.keras.layers import Dense, Dropout, Flatten, Conv2D, MaxPooling2D
-# from tensorflow.keras.utils import to_categorical
 # from sklearn.model_selection import train_test_split
+# from tensorflow.keras.layers import LSTM, Dense, Masking
+# from tensorflow.keras.models import Sequential
 
-# # Load metadata
-# metadata_path = '../data/validated.tsv'  # Path to your metadata file
-# metadata = pd.read_csv(metadata_path, sep='\t')
-
-# # Define a function to load and preprocess audio
-# def extract_features(file_path, max_pad_len=40):
+# # Feature extraction without fixed-length padding
+# def extract_features(file_path):
 #     try:
-#         audio, sample_rate = librosa.load(file_path, res_type='kaiser_fast')
+#         audio, sample_rate = librosa.load(file_path, sr=None)
 #         mfccs = librosa.feature.mfcc(y=audio, sr=sample_rate, n_mfcc=40)
-#         #pad_width = max_pad_len - mfccs.shape[1]
-#         #mfccs = np.pad(mfccs, pad_width=((0, 0), (0, pad_width)), mode='constant')
-#         if mfccs.shape[1] > max_pad_len:
-#             mfccs = mfccs[:, :max_pad_len]
-#         else:
-#             pad_width = max_pad_len - mfccs.shape[1]
-#             mfccs = np.pad(mfccs, pad_width=((0, 0), (0, pad_width)), mode='constant')
 #     except Exception as e:
-#         print(f"Error encountered while parsing file: {file_path}, {e}")
-#         return None 
-#     return mfccs
+#         print("Error encountered while parsing file: ", file_path, e)
+#         return None
+#     return mfccs.T  # Transpose to make time steps the first dimension
 
-# audio_dir = '../data/clips'  # Directory containing your MP3 files
-# features = []
-# labels = []
+# # Load dataset and extract features
+# def load_data(data_path, audio_dir):
+#     data_df = pd.read_csv(data_path, sep='\t')
+#     features, labels = [], []
+#     for _, row in data_df.iterrows():
+#         file_path = os.path.join(audio_dir, row['path'])
+#         mfccs = extract_features(file_path)
+#         if mfccs is not None:
+#             features.append(mfccs)
+#             labels.append(row['sentence'])  # Assuming 'sentence' column exists
+#     return features, labels
 
-# for index, row in metadata.iterrows():
-#     file_path = '../data/clips/' + row['path'] #os.path.join(audio_dir, row['path'])
-#     data = extract_features(file_path)
-#     if data is not None:
-#         features.append(data)
-#         labels.append(row['sentence'])  # Update this based on your actual label
+# # Preprocess and tokenize labels
+# def preprocess_labels(labels):
+#     tokenizer = tf.keras.preprocessing.text.Tokenizer(char_level=True)
+#     tokenizer.fit_on_texts(labels)
+#     sequences = tokenizer.texts_to_sequences(labels)
+#     return sequences, tokenizer
 
-# features = np.array(features)
-# labels = np.array(labels)  # Ensure this matches your actual labels structure
-# labels = to_categorical(labels, num_classes=2)  # Adjust num_classes as needed
+# # Create a TensorFlow dataset for variable-length sequences
+# def make_dataset(features, sequences, batch_size=32):
+#     dataset = tf.data.Dataset.from_generator(
+#         lambda: zip(features, sequences),
+#         output_signature=(
+#             tf.TensorSpec(shape=(None, 40), dtype=tf.float32),
+#             tf.TensorSpec(shape=(None,), dtype=tf.int32))
+#     )
+#     dataset = dataset.padded_batch(batch_size, padded_shapes=([None, 40], [None]))
+#     return dataset
 
-# # Split data
-# X_train, X_test, y_train, y_test = train_test_split(features, labels, test_size=0.2, random_state=42)
-# X_train = X_train[..., np.newaxis]  # Add channel dimension for CNN input
-# X_test = X_test[..., np.newaxis]
+# # Define the model
+# def build_model(input_dim, output_dim):
+#     model = Sequential([
+#         Masking(mask_value=0., input_shape=(None, input_dim)),
+#         LSTM(128, return_sequences=True),
+#         LSTM(64),
+#         Dense(output_dim, activation='softmax')
+#     ])
+#     model.compile(optimizer='adam', loss='sparse_categorical_crossentropy', metrics=['accuracy'])
+#     return model
 
-# # Build a simple CNN model
-# model = Sequential([
-#     Conv2D(32, kernel_size=(2, 2), activation='relu', input_shape=(40, 40, 1)),
-#     MaxPooling2D(pool_size=(2, 2)),
-#     Dropout(0.25),
-#     Flatten(),
-#     Dense(128, activation='relu'),
-#     Dropout(0.5),
-#     Dense(2, activation='softmax')  # Update output layer based on your number of classes
-# ])
-# model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
+# # Main script
+# if __name__ == "__main__":
+#     data_path = '../data/validated.tsv'
+#     audio_dir = '../data/clips'
+    
+#     # Load and preprocess data
+#     features, labels = load_data(data_path, audio_dir)
+#     sequences, tokenizer = preprocess_labels(labels)
+    
+#     # Split data
+#     X_train, X_val, y_train, y_val = train_test_split(features, sequences, test_size=0.2, random_state=42)
+    
+#     # Create TensorFlow datasets
+#     train_dataset = make_dataset(X_train, y_train)
+#     val_dataset = make_dataset(X_val, y_val)
+    
+#     # Build and train the model
+#     model = build_model(40, len(tokenizer.word_index) + 1)  # 40 MFCC features
+#     model.summary()
+#     model.fit(train_dataset, validation_data=val_dataset, epochs=10)
 
-# # Train the model
-# history = model.fit(X_train, y_train, epochs=30, batch_size=256, validation_data=(X_test, y_test), verbose=2)
-
-# # Evaluate the model on the test set
-# test_loss, test_accuracy = model.evaluate(X_test, y_test, verbose=2)
-
-# # Export evaluation results to a text file
-# with open('../data/model_evaluation.txt', 'w') as file:
-#     file.write(f"Test Loss: {test_loss}\n")
-#     file.write(f"Test Accuracy: {test_accuracy * 100:.2f}%\n")
-
-# # Plot training & validation accuracy and loss
-# plt.plot(history.history['accuracy'])
-# plt.plot(history.history['val_accuracy'])
-# plt.title('Model accuracy')
-# plt.ylabel('Accuracy')
-# plt.xlabel('Epoch')
-# plt.legend(['Train', 'Test'], loc='upper left')
-# plt.show()
-
-# plt.plot(history.history['loss'])
-# plt.plot(history.history['val_loss'])
-# plt.title('Model loss')
-# plt.ylabel('Loss')
-# plt.xlabel('Epoch')
-# plt.legend(['Train', 'Test'], loc='upper left')
-# plt.show()
-
-import os
-import pandas as pd
 import numpy as np
+import pandas as pd
 import librosa
 import tensorflow as tf
-from tensorflow.keras.preprocessing.text import Tokenizer
-from tensorflow.keras.preprocessing.sequence import pad_sequences
-from tensorflow.keras.models import Sequential
-from tensorflow.keras.layers import Dense, LSTM, Embedding, Bidirectional
 from sklearn.model_selection import train_test_split
+from tensorflow.keras.layers import Input, LSTM, Dense, TimeDistributed, Bidirectional, Lambda
+from tensorflow.keras.models import Model
+from tensorflow.keras.preprocessing.sequence import pad_sequences
+from tensorflow.keras.preprocessing.text import Tokenizer
 
-# Load metadata
-metadata_path = '../data/validated.tsv'  # Adjust path as needed
-metadata = pd.read_csv(metadata_path, sep='\t')
+# 1. Preprocessing
+def extract_mfcc(file_path):
+    audio, sample_rate = librosa.load(file_path, sr=None)
+    mfccs = librosa.feature.mfcc(y=audio, sr=sample_rate, n_mfcc=13)
+    return mfccs.T
 
-audio_dir = '../data/clips'  # Adjust directory as needed
+def preprocess_data(dataframe, audio_dir):
+    tokenizer = Tokenizer(char_level=True)
+    tokenizer.fit_on_texts(dataframe['sentence'].values)
+    sequence_data = tokenizer.texts_to_sequences(dataframe['sentence'].values)
+    sequence_padded = pad_sequences(sequence_data, padding='post')
+    
+    mfcc_features = []
+    for index, row in dataframe.iterrows():
+        file_path = f"{audio_dir}/{row['path']}"
+        mfccs = extract_mfcc(file_path)
+        mfcc_features.append(mfccs)
+    
+    mfcc_padded = pad_sequences(mfcc_features, maxlen=115, dtype='float', padding='post', truncating='post', value=0)
+    
+    return mfcc_padded, sequence_padded, tokenizer
 
-# Define a function to load and preprocess audio
-def extract_features(file_path, max_pad_len=40):
-    try:
-        audio, sample_rate = librosa.load(file_path, res_type='kaiser_fast')
-        mfccs = librosa.feature.mfcc(y=audio, sr=sample_rate, n_mfcc=40)
-        if mfccs.shape[1] > max_pad_len:
-            mfccs = mfccs[:, :max_pad_len]
-        else:
-            pad_width = max_pad_len - mfccs.shape[1]
-            mfccs = np.pad(mfccs, pad_width=((0, 0), (0, pad_width)), mode='constant')
-    except Exception as e:
-        print(f"Error encountered while parsing file: {file_path}, {e}")
-        return None 
-    return mfccs
+# CTC loss function
+def ctc_lambda_func(args):
+    y_pred, labels, input_length, label_length = args
+    return tf.keras.backend.ctc_batch_cost(labels, y_pred, input_length, label_length)
 
-# Preprocess audio and labels
-features = []
-labels = []
+# Assuming you have a dataframe with 'filename' and 'transcription' columns
+dataframe = data_df = pd.read_csv("../data/validated.tsv", sep='\t')
+audio_dir = '../data/clips'
+mfcc_features, transcriptions, tokenizer = preprocess_data(dataframe, audio_dir)
 
-for index, row in metadata.iterrows():
-    file_path = os.path.join(audio_dir, row['path'])
-    data = extract_features(file_path)
-    if data is not None:
-        features.append(data)
-        labels.append(row['sentence'])  # Assuming 'sentence' contains the transcription
+# 2. Preparing the dataset
+X_train, X_test, y_train, y_test = train_test_split(mfcc_features, transcriptions, test_size=0.2)
+input_length = np.array([len(x) for x in X_train])
+label_length = np.array([len(y) for y in y_train])
 
-# Tokenize and pad text labels
-tokenizer = Tokenizer()
-tokenizer.fit_on_texts(labels)
-sequences = tokenizer.texts_to_sequences(labels)
-padded_sequences = pad_sequences(sequences, padding='post')
+# 3. Defining the model
+input_dim = X_train.shape[2]  # MFCC feature dimension
+output_dim = len(tokenizer.word_index) + 2  # Num characters + 1 for CTC blank character
 
-# Convert features to NumPy array and prepare data for training
-features = np.array(features)
-X_train, X_test, y_train, y_test = train_test_split(features, padded_sequences, test_size=0.2, random_state=42)
+input_data = Input(name='the_input', shape=(None, input_dim), dtype='float32')
+x = Bidirectional(LSTM(128, return_sequences=True))(input_data)
+x = TimeDistributed(Dense(output_dim, activation='linear'))(x)  # linear activation for CTC
+y_pred = Lambda(lambda x: tf.keras.backend.softmax(x, axis=-1))(x)
 
-# Add channel dimension for LSTM layer
-X_train = np.expand_dims(X_train, -1)
-X_test = np.expand_dims(X_test, -1)
+labels = Input(name='the_labels', shape=[None], dtype='float32')
+input_lengths = Input(name='input_length', shape=[1], dtype='int64')
+label_lengths = Input(name='label_length', shape=[1], dtype='int64')
 
-# Define a basic LSTM model for demonstration
-model = Sequential([
-    LSTM(128, return_sequences=True, input_shape=(X_train.shape[1], X_train.shape[2])),
-    Dense(64, activation='relu'),
-    LSTM(64, return_sequences=True),
-    Dense(len(tokenizer.word_index) + 1, activation='softmax')
-])
+loss_out = Lambda(ctc_lambda_func, output_shape=(1,), name='ctc')([y_pred, labels, input_lengths, label_lengths])
+model = Model(inputs=[input_data, labels, input_lengths, label_lengths], outputs=loss_out)
 
-model.compile(loss='sparse_categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
+# 4. Training the model
+model.compile(loss={'ctc': lambda y_true, y_pred: y_pred}, optimizer='adam')
+model.fit(x=[X_train, y_train, input_length, label_length], y=np.zeros(len(X_train)), batch_size=32, epochs=10, validation_split=0.2)
 
-# Train the model
-history = model.fit(X_train, np.expand_dims(y_train, -1), epochs=10, validation_data=(X_test, np.expand_dims(y_test, -1)), verbose=2)
