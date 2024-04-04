@@ -109,6 +109,7 @@ def get_features(path):
     
     return result
 
+sns.set_style('darkgrid')
 RAV = '../data/emotions_clips/audio_speech_actors_01-24/'
 dir_list = os.listdir(RAV)
 
@@ -189,7 +190,6 @@ ipd.Audio(x, rate=sample_rate)
 x = pitch(data,sample_rate)
 plt.figure(figsize=(14,4))
 #librosa.display.waveshow(y=x, sr=sample_rate, color="black")
-#librosa.display.waveshow(stereo[0, :div], sr=sr, ax=axs[2, 0], color="blue")
 
 ipd.Audio(x, rate=sample_rate)
 
@@ -280,7 +280,7 @@ history=model.fit(x_train, y_train, batch_size=64, epochs=50, validation_data=(x
 # evaluation
 print("Accuracy of our model on test data : " , model.evaluate(x_test,y_test)[1]*100 , "%")
 
-plt.style.use('seaborn-darkgrid')
+#plt.style.use('seaborn-darkgrid')
 plt.rcParams.update({'font.size': 12})
 epochs = [i for i in range(50)]
 fig , ax = plt.subplots(1,2)
@@ -314,6 +314,6 @@ df = pd.DataFrame(columns=['Predicted Labels', 'Actual Labels'])
 df['Predicted Labels'] = y_pred.flatten()
 df['Actual Labels'] = y_test.flatten()
 
-display(df.head())
+print(df.head())
 
 print(classification_report(y_test, y_pred))
