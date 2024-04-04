@@ -153,58 +153,45 @@ px_fig.update_layout(bargap=0.2)
 px_fig.show()
 
 emotion='fear'
-print("hererehrehrherhehrehrehrehr6")
+#print("hererehrehrherhehrehrehrehr6")
 
 path = np.array(RAV_df.path[RAV_df.emotion==emotion])[1]
-print("hererehrehrherhehrehrehrehr5")
-
 data, sampling_rate = librosa.load(path)
-print("hererehrehrherhehrehrehrehr4")
-
-create_waveplot(data, sampling_rate, emotion)
-print("hererehrehrherhehrehrehrehr3")
-
+#create_waveplot(data, sampling_rate, emotion)
 create_spectrogram(data, sampling_rate, emotion)
-print("hererehrehrherhehrehrehrehr2")
-
 ipd.Audio(path)
-print("hererehrehrherhehrehrehrehr1")
-
 # taking any example and checking for techniques.
 path = np.array(RAV_df.path)[1]
 data, sample_rate = librosa.load(path)
-
 plt.figure(figsize=(14,4))
-librosa.display.waveshow(y=data, sr=sample_rate, color="blue")
+#librosa.display.waveshow(y=data, sr=sample_rate, color="blue")
 ipd.Audio(path)
 
 # noise injection
 x = noise(data)
 plt.figure(figsize=(14,4))
-librosa.display.waveshow(y=x, sr=sample_rate, color="green")
+#librosa.display.waveshow(y=x, sr=sample_rate, color="green")
 ipd.Audio(x, rate=sample_rate)
 
 # stretching
 x = stretch(data)
 plt.figure(figsize=(14,4))
-librosa.display.waveshow(y=x, sr=sample_rate, color="yellow")
+#librosa.display.waveshow(y=x, sr=sample_rate, color="yellow")
 ipd.Audio(x, rate=sample_rate)
 
 # shifting
 x = shift(data)
 plt.figure(figsize=(14,4))
-librosa.display.waveshow(y=x, sr=sample_rate, color="purple")
+#librosa.display.waveshow(y=x, sr=sample_rate, color="purple")
 ipd.Audio(x, rate=sample_rate)
 
 # pitch
 x = pitch(data,sample_rate)
 plt.figure(figsize=(14,4))
-librosa.display.waveshow(y=x, sr=sample_rate, color="black")
+#librosa.display.waveshow(y=x, sr=sample_rate, color="black")
 #librosa.display.waveshow(stereo[0, :div], sr=sr, ax=axs[2, 0], color="blue")
 
 ipd.Audio(x, rate=sample_rate)
-
-
 
 # Data preparation
 X, Y = [], []
@@ -220,8 +207,8 @@ Features = pd.DataFrame(X)
 Features['labels'] = Y
 Features.to_csv('features.csv', index=False)
 
-display(Features.head())
-display(Features.describe())
+print(Features.head())
+print(Features.describe())
 
 X = Features.iloc[: ,:-1].values
 Y = Features['labels'].values
@@ -282,11 +269,9 @@ history_lstm = model_lstm.fit(x_train, y_train, epochs=50, batch_size=64, valida
 score_lstm = model_lstm.evaluate(x_test, y_test, verbose=0)
 print("LSTM Model Accuracy: {:.2f}%".format(score_lstm[1] * 100))
 
-
 # save model
 model.save('emotion_cnn_model.h5')  # Save the CNN model
 model_lstm.save('emotion_lstm_model.h5')  # Save the LSTM model
-
 
 # training
 rlrp = ReduceLROnPlateau(monitor='loss', factor=0.4, verbose=0, patience=4, min_lr=0.0000001)
@@ -332,4 +317,3 @@ df['Actual Labels'] = y_test.flatten()
 display(df.head())
 
 print(classification_report(y_test, y_pred))
-
