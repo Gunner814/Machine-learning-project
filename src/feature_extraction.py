@@ -8,14 +8,14 @@ def noise(data):
     return data
 
 def stretch(data, rate=0.8):
-    return librosa.effects.time_stretch(data, rate)
+    return librosa.effects.time_stretch(data, rate=rate)
 
 def shift(data):
     shift_range = int(np.random.uniform(low=-5, high=5) * 1000)
-    return np.roll(data, shift_range)
+    return np.roll(data, shift=shift_range)
 
 def pitch(data, sampling_rate, pitch_factor=0.7):
-    return librosa.effects.pitch_shift(data, sampling_rate, n_steps=pitch_factor)
+    return librosa.effects.pitch_shift(data, sr=sampling_rate, n_steps=pitch_factor)
 
 # Feature Extraction
 def extract_features(data, sample_rate):
@@ -54,10 +54,10 @@ def get_features(path):
     result = np.vstack((result, res3))  # stacking vertically
     return result
 
-# Example usage
-if __name__ == "__main__":
-    # Assuming you have a path to an audio file
-    path = '../data/emotions_clips/audio_speech_actors_01-24/'
+# # Example usage
+# if __name__ == "__main__":
+#     # Assuming you have a path to an audio file
+#     path = '../data/emotions_clips/audio_speech_actors_01-24/'
 
-    features = get_features(path)
-    print(features.shape)
+#     features = get_features(path)
+#     print(features.shape)
