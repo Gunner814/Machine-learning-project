@@ -15,6 +15,8 @@ from keras.layers import Dense, Conv1D, MaxPooling1D, Flatten, Dropout, BatchNor
 from keras.utils import to_categorical
 from keras.callbacks import ModelCheckpoint
 from keras import regularizers
+from keras.layers import LSTM
+
 
 import os
 import glob 
@@ -249,6 +251,29 @@ model.add(Dense(units=7, activation='softmax'))
 model.compile(optimizer = 'adam' , loss = 'categorical_crossentropy' , metrics = ['accuracy'])
 
 model.summary()
+
+# LSTM Model Definition
+model_lstm = Sequential()
+model_lstm.add(LSTM(64, return_sequences=True, input_shape=(x_train.shape[1], 1)))
+model_lstm.add(Dropout(0.5))
+model_lstm.add(LSTM(32))
+model_lstm.add(Dropout(0.5))
+model_lstm.add(Dense(7, activation='softmax'))  # Assuming 7 emotions as output classes
+
+model_lstm.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
+
+# LSTM Model Training
+history_lstm = model_lstm.fit(x_train, y_train, epochs=50, batch_size=64, validation_data=(x_test, y_test))
+
+# Evaluate LSTM model
+score_lstm = model_lstm.evaluate(x_test, y_test, verbose=0)
+print("LSTM Model Accuracy: {:.2f}%".format(score_lstm[1] * 100))
+
+
+# save model
+model.save('emotion_cnn_model.h5')  # Save the CNN model
+model_lstm.save('emotion_lstm_model.h5')  # Save the LSTM model
+
 
 # training
 rlrp = ReduceLROnPlateau(monitor='loss', factor=0.4, verbose=0, patience=4, min_lr=0.0000001)
