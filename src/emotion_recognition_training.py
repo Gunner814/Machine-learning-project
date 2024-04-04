@@ -30,55 +30,10 @@ if not sys.warnoptions:
     warnings.simplefilter("ignore")
 warnings.filterwarnings("ignore", category=DeprecationWarning) 
 
-
-
-RAV = '../data/emotions_clips/audio_speech_actors_01-24/'
-dir_list = os.listdir(RAV)
-
-emotion = []
-gender = []
-path = []
-feature = []
-for i in dir_list:
-    fname = os.listdir(RAV + i)
-    for f in fname:
-        part = f.split('.')[0].split('-')
-        emotion.append(int(part[2]))
-        temp = int(part[6])
-        if temp%2 == 0:
-            temp = "female"
-        else:
-            temp = "male"
-        gender.append(temp)
-        path.append(RAV + i + '/' + f)
-
-RAV_df = pd.DataFrame(emotion)
-RAV_df = RAV_df.replace({1:'neutral', 2:'neutral', 3:'happy', 4:'sad', 5:'angry', 6:'fear', 7:'disgust', 8:'surprise'})
-RAV_df = pd.concat([pd.DataFrame(gender),RAV_df],axis=1)
-RAV_df.columns = ['gender','emotion']
-RAV_df['labels'] =RAV_df.gender + '_' + RAV_df.emotion
-RAV_df['source'] = 'RAVDESS'
-RAV_df = pd.concat([RAV_df,pd.DataFrame(path, columns = ['path'])],axis=1)
-RAV_df = RAV_df.drop(['gender'], axis=1)
-RAV_df.labels.value_counts()
-
-print(RAV_df.head())
-print(RAV_df.describe())
-
-px_fig = px.histogram(RAV_df, x='emotion', color='emotion', marginal='box',  
-                      title='Emotion Count')
-px_fig.update_layout(bargap=0.2)
-px_fig.show()
-
-px_fig = px.histogram(RAV_df, x='labels', color='emotion', marginal='box',  
-                      title='Label Count')
-px_fig.update_layout(bargap=0.2)
-px_fig.show()
-
 def create_waveplot(data, sr, e):
     plt.figure(figsize=(10, 3))
     plt.title('Waveplot for audio with {} emotion'.format(e), size=15)
-    librosa.display.waveshow(data, sr=sr)
+    librosa.display.waveshow(data, sr=sr, color="red")
     plt.show()
 
 def create_spectrogram(data, sr, e):
@@ -90,13 +45,6 @@ def create_spectrogram(data, sr, e):
     librosa.display.specshow(Xdb, sr=sr, x_axis='time', y_axis='hz')   
     #librosa.display.specshow(Xdb, sr=sr, x_axis='time', y_axis='log')
     plt.colorbar()
-
-emotion='fear'
-path = np.array(RAV_df.path[RAV_df.emotion==emotion])[1]
-data, sampling_rate = librosa.load(path)
-create_waveplot(data, sampling_rate, emotion)
-create_spectrogram(data, sampling_rate, emotion)
-ipd.Audio(path)
 
 # data augmentation
 def noise(data):
@@ -113,38 +61,6 @@ def shift(data):
 
 def pitch(data, sampling_rate, pitch_factor=0.7):
     return librosa.effects.pitch_shift(data, sr=sampling_rate, n_steps=pitch_factor)
-
-# taking any example and checking for techniques.
-path = np.array(RAV_df.path)[1]
-data, sample_rate = librosa.load(path)
-
-plt.figure(figsize=(14,4))
-librosa.display.waveshow(y=data, sr=sample_rate)
-ipd.Audio(path)
-
-# noise injection
-x = noise(data)
-plt.figure(figsize=(14,4))
-librosa.display.waveshow(y=x, sr=sample_rate)
-ipd.Audio(x, rate=sample_rate)
-
-# stretching
-x = stretch(data)
-plt.figure(figsize=(14,4))
-librosa.display.waveshow(y=x, sr=sample_rate)
-ipd.Audio(x, rate=sample_rate)
-
-# shifting
-x = shift(data)
-plt.figure(figsize=(14,4))
-librosa.display.waveshow(y=x, sr=sample_rate)
-ipd.Audio(x, rate=sample_rate)
-
-# pitch
-x = pitch(data,sample_rate)
-plt.figure(figsize=(14,4))
-librosa.display.waveshow(y=x, sr=sample_rate)
-ipd.Audio(x, rate=sample_rate)
 
 # feature extraction
 def extract_features(data):
@@ -192,6 +108,103 @@ def get_features(path):
     result = np.vstack((result, res3)) # stacking vertically
     
     return result
+
+RAV = '../data/emotions_clips/audio_speech_actors_01-24/'
+dir_list = os.listdir(RAV)
+
+emotion = []
+gender = []
+path = []
+feature = []
+for i in dir_list:
+    fname = os.listdir(RAV + i)
+    for f in fname:
+        part = f.split('.')[0].split('-')
+        emotion.append(int(part[2]))
+        temp = int(part[6])
+        if temp%2 == 0:
+            temp = "female"
+        else:
+            temp = "male"
+        gender.append(temp)
+        path.append(RAV + i + '/' + f)
+
+RAV_df = pd.DataFrame(emotion)
+RAV_df = RAV_df.replace({1:'neutral', 2:'neutral', 3:'happy', 4:'sad', 5:'angry', 6:'fear', 7:'disgust', 8:'surprise'})
+RAV_df = pd.concat([pd.DataFrame(gender),RAV_df],axis=1)
+RAV_df.columns = ['gender','emotion']
+RAV_df['labels'] =RAV_df.gender + '_' + RAV_df.emotion
+RAV_df['source'] = 'RAVDESS'
+RAV_df = pd.concat([RAV_df,pd.DataFrame(path, columns = ['path'])],axis=1)
+RAV_df = RAV_df.drop(['gender'], axis=1)
+RAV_df.labels.value_counts()
+
+print(RAV_df.head())
+print(RAV_df.describe())
+
+px_fig = px.histogram(RAV_df, x='emotion', color='emotion', marginal='box',  
+                      title='Emotion Count')
+px_fig.update_layout(bargap=0.2)
+px_fig.show()
+
+px_fig = px.histogram(RAV_df, x='labels', color='emotion', marginal='box',  
+                      title='Label Count')
+px_fig.update_layout(bargap=0.2)
+px_fig.show()
+
+emotion='fear'
+print("hererehrehrherhehrehrehrehr6")
+
+path = np.array(RAV_df.path[RAV_df.emotion==emotion])[1]
+print("hererehrehrherhehrehrehrehr5")
+
+data, sampling_rate = librosa.load(path)
+print("hererehrehrherhehrehrehrehr4")
+
+create_waveplot(data, sampling_rate, emotion)
+print("hererehrehrherhehrehrehrehr3")
+
+create_spectrogram(data, sampling_rate, emotion)
+print("hererehrehrherhehrehrehrehr2")
+
+ipd.Audio(path)
+print("hererehrehrherhehrehrehrehr1")
+
+# taking any example and checking for techniques.
+path = np.array(RAV_df.path)[1]
+data, sample_rate = librosa.load(path)
+
+plt.figure(figsize=(14,4))
+librosa.display.waveshow(y=data, sr=sample_rate, color="blue")
+ipd.Audio(path)
+
+# noise injection
+x = noise(data)
+plt.figure(figsize=(14,4))
+librosa.display.waveshow(y=x, sr=sample_rate, color="green")
+ipd.Audio(x, rate=sample_rate)
+
+# stretching
+x = stretch(data)
+plt.figure(figsize=(14,4))
+librosa.display.waveshow(y=x, sr=sample_rate, color="yellow")
+ipd.Audio(x, rate=sample_rate)
+
+# shifting
+x = shift(data)
+plt.figure(figsize=(14,4))
+librosa.display.waveshow(y=x, sr=sample_rate, color="purple")
+ipd.Audio(x, rate=sample_rate)
+
+# pitch
+x = pitch(data,sample_rate)
+plt.figure(figsize=(14,4))
+librosa.display.waveshow(y=x, sr=sample_rate, color="black")
+#librosa.display.waveshow(stereo[0, :div], sr=sr, ax=axs[2, 0], color="blue")
+
+ipd.Audio(x, rate=sample_rate)
+
+
 
 # Data preparation
 X, Y = [], []
