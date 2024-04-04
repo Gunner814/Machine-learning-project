@@ -15,7 +15,12 @@ from keras.layers import Dense, Conv1D, MaxPooling1D, Flatten, Dropout, BatchNor
 from keras.utils import to_categorical
 from keras.callbacks import ModelCheckpoint
 from keras import regularizers
+
 from keras.layers import LSTM
+from sklearn.svm import SVC
+from joblib import dump, load
+from sklearn.metrics import accuracy_score
+
 
 
 import os
@@ -269,9 +274,39 @@ history_lstm = model_lstm.fit(x_train, y_train, epochs=50, batch_size=64, valida
 score_lstm = model_lstm.evaluate(x_test, y_test, verbose=0)
 print("LSTM Model Accuracy: {:.2f}%".format(score_lstm[1] * 100))
 
+# Train the SVM model
+svm_model = SVC(C=1.0, kernel='rbf', gamma='scale', probability=True)
+svm_model.fit(x_train.reshape(x_train.shape[0], -1), np.argmax(y_train, axis=1))  # Reshape x_train for SVM and use argmax to convert y_train back from one-hot encoding
+
+# Evaluate the SVM model on the test set
+y_pred_svm = svm_model.predict(x_test.reshape(x_test.shape[0], -1))
+y_pred_proba_svm = svm_model.predict_proba(x_test.reshape(x_test.shape[0], -1))  # Probability estimates for ROC curve, etc.
+
+# Since SVM predicts class labels, convert y_test from one-hot to labels for comparison
+y_test_labels = np.argmax(y_test, axis=1)
+
+# Predict labels with the SVM model
+y_pred_svm = svm_model.predict(x_test.reshape(x_test.shape[0], -1))
+
+# Calculate the accuracy
+svm_accuracy = accuracy_score(y_test_labels, y_pred_svm)
+
+# Print the accuracy
+print("SVM Model Accuracy: {:.2f}%".format(svm_accuracy * 100))
+
+# Classification report
+print("SVM Classification Report:")
+print(classification_report(y_test_labels, y_pred_svm))
+
+
 # save model
 model.save('emotion_cnn_model.h5')  # Save the CNN model
 model_lstm.save('emotion_lstm_model.h5')  # Save the LSTM model
+dump(svm_model, 'emotion_svm_model.joblib')
+
+#fyi - for loading
+# svm_model = load('emotion_svm_model.joblib')
+
 
 # training
 rlrp = ReduceLROnPlateau(monitor='loss', factor=0.4, verbose=0, patience=4, min_lr=0.0000001)
