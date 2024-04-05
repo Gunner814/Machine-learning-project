@@ -18,8 +18,8 @@ https://github.com/Gunner814/Machine-learning-project
 
 # User Manual
 1. Run the .bat file to install all dependencies
-2. Program (emotion_recognition_training.py) will run all 3 models to be trained.
-3. At the end of the program, Accuracy of prediction of 3 modesl will be displayed.
+2. Run the program in the command line "python  emotion_recognition_training.py" and all 3 models will be trained.
+3. At the end of the program, Accuracy of prediction of 3 models will be displayed in the results folder
 
 # Disclaimer
 Our group has changed the project scope from our initial proposal. This project now focuses on emotion recognition from audio inputs.
