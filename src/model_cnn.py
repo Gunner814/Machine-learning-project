@@ -1,56 +1,42 @@
-from keras.models import Sequential
+from keras.callbacks import ReduceLROnPlateau
+from keras.models import Sequential, load_model
 from keras.layers import Dense, Conv1D, MaxPooling1D, Flatten, Dropout, BatchNormalization, LeakyReLU
 from data_preprocessing import load_data
+import pickle
 
-def CreateCNNModel(x_train):
-    # CNN modelling
-    # model=Sequential()
-    # model.add(Conv1D(256, kernel_size=5, strides=1, padding='same', activation='relu', input_shape=(x_train.shape[1], 1)))
-    # model.add(MaxPooling1D(pool_size=5, strides = 2, padding = 'same'))
-    # model.add(Conv1D(128, kernel_size=5, strides=1, padding='same', activation='relu'))
-    # model.add(MaxPooling1D(pool_size=5, strides = 2, padding = 'same'))
-    # model.add(Conv1D(64, kernel_size=5, strides=1, padding='same', activation='relu'))
-    # model.add(MaxPooling1D(pool_size=5, strides = 2, padding = 'same'))
-    # model.add(Dropout(0.2))
-    # model.add(Conv1D(32, kernel_size=5, strides=1, padding='same', activation='relu'))
-    # model.add(MaxPooling1D(pool_size=5, strides = 2, padding = 'same'))
-    # model.add(Flatten())
-    # model.add(Dense(units=16, activation='relu'))
-    # model.add(Dropout(0.3))
-    # model.add(Dense(units=7, activation='softmax'))
-    # model.compile(optimizer = 'adam' , loss = 'categorical_crossentropy' , metrics = ['accuracy'])
+class CNN_Model:
+    def __init__(self, x_train):
+        self.model = Sequential()
+        self.model.add(Conv1D(64, kernel_size=3, padding='same', activation=LeakyReLU(alpha=0.1), input_shape=(x_train.shape[1], 1)))
+        self.model.add(BatchNormalization())
+        self.model.add(MaxPooling1D(pool_size=2))
+        self.model.add(Dropout(0.25))
+        self.model.add(Conv1D(128, kernel_size=3, padding='same', activation=LeakyReLU(alpha=0.1)))
+        self.model.add(BatchNormalization())
+        self.model.add(MaxPooling1D(pool_size=2))
+        self.model.add(Dropout(0.25))
+        self.model.add(Flatten())
+        self.model.add(Dense(64, activation=LeakyReLU(alpha=0.1)))
+        self.model.add(BatchNormalization())
+        self.model.add(Dropout(0.5))
+        self.model.add(Dense(units=7, activation='softmax'))
+        self.model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
 
-    model = Sequential()
-    model.add(Conv1D(64, kernel_size=3, padding='same', activation=LeakyReLU(alpha=0.1), input_shape=(x_train.shape[1], 1)))
-    model.add(BatchNormalization())
-    model.add(MaxPooling1D(pool_size=2))
-    model.add(Dropout(0.25))
-    model.add(Conv1D(128, kernel_size=3, padding='same', activation=LeakyReLU(alpha=0.1)))
-    model.add(BatchNormalization())
-    model.add(MaxPooling1D(pool_size=2))
-    model.add(Dropout(0.25))
-    model.add(Flatten())
-    model.add(Dense(64, activation=LeakyReLU(alpha=0.1)))
-    model.add(BatchNormalization())
-    model.add(Dropout(0.5))
-    model.add(Dense(units=7, activation='softmax'))
-    model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
-    return model
+    def Summary(self):
+        self.model.summary()
 
-# # Load and preprocess data
-# RAV = '../data/emotions_clips/audio_speech_actors_01-24/'
-# df = load_data(RAV)
-# X, Y = get_features(df)
+    def Train(self, x_train, y_train, x_test, y_test, batch_size=64, epochs=50):
+        rlrp = ReduceLROnPlateau(monitor='loss', factor=0.4, verbose=0, patience=4, min_lr=0.0000001)
+        self.history=self.model.fit(x_train, y_train, batch_size, epochs, validation_data=(x_test, y_test), callbacks=[rlrp])
+        
+    def Evaluate(self, x_test, y_test):
+        self.score = self.model.evaluate(x_test, y_test)[1] * 100
+        print("CNN Model's Accuracy: " , self.score, "%")
 
-# # Model definition
-# model = Sequential([
-#     Conv1D(256, kernel_size=5, strides=1, padding='same', activation='relu', input_shape=(X.shape[1], 1)),
-#     MaxPooling1D(pool_size=5, strides=2, padding='same'),
-#     # Add more layers...
-#     Flatten(),
-#     Dense(7, activation='softmax')
-# ])
+    def Save(self, save_dir):
+        self.model.save(save_dir)
 
-# # Compile, train, and evaluate model
-# model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
-# # model.fit(...)
+    def Load(self, save_dir):
+        self.model = pickle.load(open(save_dir, 'rb'))
+        self.score = self.model.score
+        #self.history = self.model.history

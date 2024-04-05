@@ -1,43 +1,44 @@
 import numpy as np
 
+from sklearn.preprocessing import StandardScaler
 from sklearn.model_selection import GridSearchCV
-from sklearn.metrics import classification_report
+from sklearn.metrics import classification_report, accuracy_score
 from sklearn.svm import SVC
-from sklearn.metrics import accuracy_score
+from joblib import dump, load
 
-def CreateSVMModel(x_train, y_train, x_test, y_test):
-    # # SVM Model
-    # svm_model = SVC(C=1.0, kernel='rbf', gamma='scale', probability=True)
-    # # SVM Model Training
-    # svm_model.fit(x_train.reshape(x_train.shape[0], -1), np.argmax(y_train, axis=1))  # Reshape x_train for SVM and use argmax to convert y_train back from one-hot encoding
-    # # SVM Model Evaluation
-    # y_pred_svm = svm_model.predict(x_test.reshape(x_test.shape[0], -1))
-    # y_pred_proba_svm = svm_model.predict_proba(x_test.reshape(x_test.shape[0], -1))  # Probability estimates for ROC curve, etc.
-    # # Since SVM predicts class labels, convert y_test from one-hot to labels for comparison
-    # y_test_labels = np.argmax(y_test, axis=1)
-    # # Predict labels with the SVM model
-    # y_pred_svm = svm_model.predict(x_test.reshape(x_test.shape[0], -1))
+class SVM_Model:
+    def __init__(self, x_train, y_train, x_test, y_test):
+        # Define parameter grid for SVM GridSearchCV
+        param_grid = {
+            'C': [0.1, 1, 10, 100],
+            'gamma': ['scale', 'auto'],
+            'kernel': ['rbf', 'poly', 'sigmoid']
+        }
+        self.grid = GridSearchCV(SVC(probability=True), param_grid, refit=True, verbose=2, cv=3)
+        scaler = StandardScaler()
+        self.x_train = scaler.fit_transform(x_train.reshape(x_train.shape[0], -1))
+        self.y_train = y_train
+        self.x_test = scaler.transform(x_test.reshape(x_test.shape[0], -1))
+        self.y_test = y_test
 
-    # Train the SVM model
-    model = SVC(C=1.0, kernel='rbf', gamma='scale', probability=True)
-    model.fit(x_train.reshape(x_train.shape[0], -1), np.argmax(y_train, axis=1))  # Reshape x_train for SVM and use argmax to convert y_train back from one-hot encoding
-    x_train_svm = x_train.reshape(x_train.shape[0], -1)  # Reshaping for SVM
-    y_train_svm = np.argmax(y_train, axis=1)  # Converting from one-hot to labels
-    param_grid = {
-        'C': [0.1, 1, 10, 100], 
-        'gamma': ['scale', 'auto'],
-        'kernel': ['rbf', 'poly', 'sigmoid']
-    }
-    grid = GridSearchCV(SVC(), param_grid, refit=True, verbose=2, cv=3)
-    grid.fit(x_train_svm, y_train_svm)
-    # print("Best Parameters: ", grid.best_params_)
-    # Use the best model from grid search for predictions and further evaluations
-    svm_model_best = grid.best_estimator_
-    # Evaluate the SVM model on the test set
-    y_pred_svm = model.predict(x_test.reshape(x_test.shape[0], -1))
-    y_pred_proba_svm = model.predict_proba(x_test.reshape(x_test.shape[0], -1))  # Probability estimates for ROC curve, etc.
-    # Since SVM predicts class labels, convert y_test from one-hot to labels for comparison
-    y_test_labels = np.argmax(y_test, axis=1)
-    # Predict labels with the SVM model
-    y_pred_svm = model.predict(x_test.reshape(x_test.shape[0], -1))
-    return model
+    def Train(self):
+        x_train_svm = self.x_train.reshape(self.x_train.shape[0], -1)
+        y_train_svm = np.argmax(self.y_train, axis=1)
+        self.grid.fit(x_train_svm, y_train_svm)
+        self.model = self.grid.best_estimator_
+
+    def Evaluate(self):
+        x_test_svm = self.x_test.reshape(self.x_test.shape[0], -1)
+        y_pred_svm = self.model.predict(x_test_svm)
+        # Calculate accuracy
+        self.score = accuracy_score(np.argmax(self.y_test, axis=1), y_pred_svm)
+        print("SVM Model's Accuracy: " , self.score * 100, "%")
+        # Classification report
+        print("SVM Classification Report:")
+        print(classification_report(np.argmax(self.y_test, axis=1), y_pred_svm))
+
+    def Save(self, save_dir):
+        dump(self.model, save_dir)
+
+    def Load(self, save_dir):
+        self.model = load(save_dir)

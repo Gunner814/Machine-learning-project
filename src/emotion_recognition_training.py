@@ -10,30 +10,25 @@ import sys
 import warnings
 import seaborn as sns
 
-from keras.callbacks import ReduceLROnPlateau
 from sklearn.preprocessing import StandardScaler, OneHotEncoder
-from sklearn.model_selection import GridSearchCV
-from sklearn.metrics import classification_report
 from sklearn.model_selection import train_test_split
-from sklearn.svm import SVC
-from sklearn.metrics import accuracy_score
-from joblib import dump, load
 
 if not sys.warnoptions:
     warnings.simplefilter("ignore")
 warnings.filterwarnings("ignore", category=DeprecationWarning) 
 
 from feature_extraction import get_features, extract_features
-from model_cnn import CreateCNNModel
-from model_lstm import CreateLSTMModel
-from model_svm import CreateSVMModel
+from model_cnn import CNN_Model
+from model_lstm import LSTM_Model
+from model_svm import SVM_Model
 from utils import ShowLossAndAccuracy
 
-def create_waveplot(data, sr, e):
-    plt.figure(figsize=(10, 3))
+def create_waveplot(data, sr, e, x=None, color="red"):
+    plt.figure(figsize=(14,4))
     plt.title('Waveplot for audio with {} emotion'.format(e), size=15)
-    librosa.display.waveshow(data, sr=sr, color="red")
-    plt.show()
+    librosa.display.waveshow(data, sr=sr, color=color)
+    if(x is not None):
+        ipd.Audio(x, sr)
 
 def create_spectrogram(data, sr, e):
     # stft function converts the data into short term fourier transform
@@ -105,40 +100,21 @@ emotion='fear'
 
 path = np.array(RAV_df.path[RAV_df.emotion==emotion])[1]
 data, sampling_rate = librosa.load(path)
-#create_waveplot(data, sampling_rate, emotion)
+create_waveplot(data, sampling_rate, emotion, color="red")
 create_spectrogram(data, sampling_rate, emotion)
-ipd.Audio(path)
 
 # taking any example and checking for techniques.
 path = np.array(RAV_df.path)[1]
 data, sample_rate = librosa.load(path)
-plt.figure(figsize=(14,4))
-#librosa.display.waveshow(y=data, sr=sample_rate, color="blue")
-ipd.Audio(path)
 
 # noise injection
 x = noise(data)
-plt.figure(figsize=(14,4))
-#librosa.display.waveshow(y=x, sr=sample_rate, color="green")
-ipd.Audio(x, rate=sample_rate)
-
 # stretching
 x = stretch(data)
-plt.figure(figsize=(14,4))
-#librosa.display.waveshow(y=x, sr=sample_rate, color="yellow")
-ipd.Audio(x, rate=sample_rate)
-
 # shifting
 x = shift(data)
-plt.figure(figsize=(14,4))
-#librosa.display.waveshow(y=x, sr=sample_rate, color="purple")
-ipd.Audio(x, rate=sample_rate)
-
 # pitch
 x = pitch(data,sample_rate)
-plt.figure(figsize=(14,4))
-#librosa.display.waveshow(y=x, sr=sample_rate, color="black")
-ipd.Audio(x, rate=sample_rate)
 
 # Data preparation
 X, Y = [], []
@@ -175,73 +151,50 @@ x_train = np.expand_dims(x_train, axis=2)
 x_test = np.expand_dims(x_test, axis=2)
 x_train.shape, y_train.shape, x_test.shape, y_test.shape
 
-# CMM Model
-CNN_Model = CreateCNNModel(x_train)
-CNN_Model.summary()
+CNN_model_dir = '../models/emotion_recognition/emotion_cnn_model.h5'
+# Create CNN Model
+CNN = CNN_Model(x_train)
+CNN.Summary()
 # CNN Model Training
-rlrp = ReduceLROnPlateau(monitor='loss', factor=0.4, verbose=0, patience=4, min_lr=0.0000001)
-history=CNN_Model.fit(x_train, y_train, batch_size=64, epochs=50, validation_data=(x_test, y_test), callbacks=[rlrp])
+CNN.Train(x_train, y_train, x_test, y_test, batch_size=64, epochs=50)
 # CNN Model Evaluation
-print("CNN Model Accuracy: " , CNN_Model.evaluate(x_test,y_test)[1]*100 , "%")
+CNN.Evaluate(x_test, y_test)
 # Save CNN Model
-CNN_Model.save('../models/emotion_recognition/emotion_cnn_model.h5')  # Save the CNN model
+CNN.Save(CNN_model_dir)
 
-# LSTM Model
-LSTM_Model = CreateLSTMModel(x_train)
-LSTM_Model.summary()
+LSTM_model_dir = '../models/emotion_recognition/emotion_lstm_model.h5'
+# Create LSTM Model
+LSTM = LSTM_Model(x_train)
+LSTM.Summary()
 # LSTM Model Training
-history_lstm = LSTM_Model.fit(x_train, y_train, epochs=50, batch_size=64, validation_data=(x_test, y_test))
+LSTM.Train(x_train, y_train, x_test, y_test, batch_size=64, epochs=50)
 # LSTM Model Evaluation
-score_lstm = LSTM_Model.evaluate(x_test, y_test, verbose=0)
-print("LSTM Model Accuracy: {:.2f}%".format(score_lstm[1] * 100))
+LSTM.Evaluate(x_test, y_test, encoder, verbose=0)
 # Save LSTM Model
-#LSTM_Model.save('../models/emotion_recognition/emotion_lstm_model.h5')
+#LSTM.Save(LSTM_model_dir) # Not working
 
-# Train the SVM model
-SVM_Model = SVC(C=1.0, kernel='rbf', gamma='scale', probability=True)
-SVM_Model.fit(x_train.reshape(x_train.shape[0], -1), np.argmax(y_train, axis=1))  # Reshape x_train for SVM and use argmax to convert y_train back from one-hot encoding
-x_train_svm = x_train.reshape(x_train.shape[0], -1)  # Reshaping for SVM
-y_train_svm = np.argmax(y_train, axis=1)  # Converting from one-hot to labels
-param_grid = {
-    'C': [0.1, 1, 10, 100], 
-    'gamma': ['scale', 'auto'],
-    'kernel': ['rbf', 'poly', 'sigmoid']
-}
-grid = GridSearchCV(SVC(), param_grid, refit=True, verbose=2, cv=3)
-grid.fit(x_train_svm, y_train_svm)
-# print("Best Parameters: ", grid.best_params_)
-# Use the best model from grid search for predictions and further evaluations
-#svm_model_best = grid.best_estimator_
-# Evaluate the SVM model on the test set
-#y_pred_proba_svm = SVM_Model.predict_proba(x_test.reshape(x_test.shape[0], -1))  # Probability estimates for ROC curve, etc.
-# Since SVM predicts class labels, convert y_test from one-hot to labels for comparison
-y_test_labels = np.argmax(y_test, axis=1)
-y_pred_svm = SVM_Model.predict(x_test.reshape(x_test.shape[0], -1))
-# Calculate the accuracy
-svm_accuracy = accuracy_score(y_test_labels, y_pred_svm)
-# Print the accuracy
-print("SVM Model Accuracy: {:.2f}%".format(svm_accuracy * 100))
-# Classification report
-print("SVM Classification Report:")
-print(classification_report(y_test_labels, y_pred_svm))
+SVM_model_dir = '../models/emotion_recognition/emotion_svm_model.joblib'
+# Create SVM model
+SVM = SVM_Model(x_train, y_train, x_test, y_test)
+# SVM Model Training
+SVM.Train()
+# SVM Model Evaluation
+SVM.Evaluate()
 # Save SVM Model
-dump(SVM_Model, '../models/emotion_recognition/emotion_svm_model.joblib')
+SVM.Save(SVM_model_dir)
 
 plt.rcParams.update({'font.size': 12})
 epochs = [i for i in range(50)]
-train_acc = history.history['accuracy']
-train_loss = history.history['loss']
-test_acc = history.history['val_accuracy']
-test_loss = history.history['val_loss']
-ShowLossAndAccuracy(epochs, history)
+ShowLossAndAccuracy(epochs, CNN)
+ShowLossAndAccuracy(epochs, LSTM)
 
-pred_test = CNN_Model.predict(x_test)
-y_pred = encoder.inverse_transform(pred_test)
-y_test = encoder.inverse_transform(y_test)
+# pred_test = CNN.predict(x_test)
+# y_pred = encoder.inverse_transform(pred_test)
+# y_test = encoder.inverse_transform(y_test)
 
-df = pd.DataFrame(columns=['Predicted Labels', 'Actual Labels'])
-df['Predicted Labels'] = y_pred.flatten()
-df['Actual Labels'] = y_test.flatten()
+# df = pd.DataFrame(columns=['Predicted Labels', 'Actual Labels'])
+# df['Predicted Labels'] = y_pred.flatten()
+# df['Actual Labels'] = y_test.flatten()
 
-print(df.head())
-print(classification_report(y_test, y_pred))
+# print(df.head())
+# print(classification_report(y_test, y_pred))

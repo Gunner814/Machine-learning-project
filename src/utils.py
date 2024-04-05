@@ -1,11 +1,11 @@
 import matplotlib.pyplot as plt
 
-def ShowLossAndAccuracy(epochs, history):
+def ShowLossAndAccuracy(epochs, model):
     fig , ax = plt.subplots(1,2)
-    train_acc = history.history['accuracy']
-    train_loss = history.history['loss']
-    test_acc = history.history['val_accuracy']
-    test_loss = history.history['val_loss']
+    train_acc = model.history.history['accuracy']
+    train_loss = model.history.history['loss']
+    test_acc = model.history.history['val_accuracy']
+    test_loss = model.history.history['val_loss']
 
     fig.set_size_inches(20,6)
     ax[0].plot(epochs , train_loss , label = 'Training Loss',marker='o', linewidth=2)
