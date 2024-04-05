@@ -87,27 +87,27 @@ x_test = scaler.transform(x_test)
 x_train = np.expand_dims(x_train, axis=2)
 x_test = np.expand_dims(x_test, axis=2)
 
-    # CNN_model_dir = '../models/emotion_recognition/emotion_cnn_model.h5'
-    # # Create CNN Model
-    # CNN = CNN_Model(x_train)
-    # CNN.Summary()
-    # # CNN Model Training
-    # CNN.Train(x_train, y_train, x_test, y_test, batch_size=64, epochs=50)
-    # # CNN Model Evaluation
-    # CNN.Evaluate(x_test, y_test, encoder)
-    # # Save CNN Model
-    # CNN.Save(CNN_model_dir)
+CNN_model_dir = '../models/emotion_recognition/emotion_cnn_model.h5'
+# Create CNN Model
+CNN = CNN_Model(x_train)
+CNN.Summary()
+# CNN Model Training
+CNN.Train(x_train, y_train, x_test, y_test, batch_size=64, epochs=50)
+# CNN Model Evaluation
+CNN.Evaluate(x_test, y_test, encoder)
+# Save CNN Model
+CNN.Save(CNN_model_dir)
 
-    # LSTM_model_dir = '../models/emotion_recognition/emotion_lstm_model.h5'
-    # # Create LSTM Model
-    # LSTM = LSTM_Model(x_train)
-    # LSTM.Summary()
-    # # LSTM Model Training
-    # LSTM.Train(x_train, y_train, x_test, y_test, batch_size=64, epochs=50)
-    # # LSTM Model Evaluation
-    # LSTM.Evaluate(x_test, y_test, encoder, verbose=0)
-    # # Save LSTM Model
-    # #LSTM.Save(LSTM_model_dir) # Not working
+LSTM_model_dir = '../models/emotion_recognition/emotion_lstm_model.h5'
+# Create LSTM Model
+LSTM = LSTM_Model(x_train)
+LSTM.Summary()
+# LSTM Model Training
+LSTM.Train(x_train, y_train, x_test, y_test, batch_size=64, epochs=50)
+# LSTM Model Evaluation
+LSTM.Evaluate(x_test, y_test, encoder, verbose=0)
+# Save LSTM Model
+#LSTM.Save(LSTM_model_dir) # Not working
 
 SVM_model_dir = '../models/emotion_recognition/emotion_svm_model.joblib'
 # Create SVM model

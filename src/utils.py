@@ -21,3 +21,4 @@ def ShowLossAndAccuracy(epochs, model):
     ax[1].set_xlabel("Epochs")
 
     plt.subplots_adjust(wspace=0.3)
+    plt.show()

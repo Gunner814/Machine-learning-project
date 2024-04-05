@@ -17,9 +17,9 @@ Chua Zhen Xun
 https://github.com/Gunner814/Machine-learning-project
 
 # User Manual
-1. Run the .bat file to install all dependencies
-2. Run the program in the command line "python  emotion_recognition_training.py" and all 3 models will be trained.
-3. At the end of the program, Accuracy of prediction of 3 models will be displayed in the results folder
+1. Run the MLbuilddependencies.bat file to install all dependencies.
+2. Run the program in the command line "python emotion_recognition_training.py" and all 3 models will be trained and tested.
+3. At the end of the program, Accuracy of prediction of CNN and LSTM models will be displayed in the data/results folder and console.  There will also be a graph showing the Loss and Accuracy of the LSTM and CNN Models during the training process as the number of epochs increase.
 
 # Disclaimer
 Our group has changed the project scope from our initial proposal. This project now focuses on emotion recognition from audio inputs.
@@ -69,4 +69,3 @@ Week 11: Model optimization for enhanced accuracy and efficiency, performance re
 Week 12: Final model testing, project result review, and documentation.
 
 Week 13: Preparation and finalization of video and presentation materials.
-
