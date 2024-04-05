@@ -16,6 +16,11 @@ Chua Zhen Xun
 # GitHub Link
 https://github.com/Gunner814/Machine-learning-project
 
+# User Manual
+1. Run the .bat file to install all dependencies
+2. Program (emotion_recognition_training.py) will run all 3 models to be trained.
+3. At the end of the program, Accuracy of prediction of 3 modesl will be displayed.
+
 # Disclaimer
 Our group has changed the project scope from our initial proposal. This project now focuses on emotion recognition from audio inputs.
 
@@ -27,6 +32,13 @@ This project aims to develop a system capable of identifying human emotions from
 
 # Data
 Our dataset comprises audio clips expressing a wide range of emotions. These recordings serve as the primary training material for our models, focusing on achieving high precision in emotion recognition for improved human-computer interaction.
+
+Data processing: 
+1. Noise Injection
+2. Time Stretching
+3. Shifting
+4. Pitch Shifting
+
 
 # Algorithms
 We explore three advanced algorithmic approaches for emotion recognition:
