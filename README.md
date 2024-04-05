@@ -13,6 +13,9 @@ Anderson Phua Tai Dah
 
 Chua Zhen Xun
 
+# GitHub Link
+https://github.com/Gunner814/Machine-learning-project
+
 # Disclaimer
 Our group has changed the project scope from our initial proposal. This project now focuses on emotion recognition from audio inputs.
 
