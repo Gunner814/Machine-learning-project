@@ -1,11 +1,9 @@
 # Machine-learning-project
-
-
 English Language Identification Using NLP
 
 Project Team 20
 
-Members
+Members:
 
 Tan Jian Jie
 
@@ -15,27 +13,33 @@ Anderson Phua Tai Dah
 
 Chua Zhen Xun
 
+# Disclaimer
+Our group has changed the project scope from our initial proposal. This project now focuses on emotion recognition from audio inputs.
+
 # Background
-Natural Language Processing (NLP) sits at the crossroads of computer science, artificial intelligence, and linguistics, emphasizing the interaction between computers and humans using natural languages. Our project focuses on enabling computers to understand and interpret human language in English, aiming to improve the accuracy and efficiency of language identification in spoken communication.
+Emotion recognition from audio signals is a challenging and fascinating area that sits at the crossroads of psychology, computer science, and artificial intelligence. It aims to enable computers to understand and interpret human emotions expressed through voice, enhancing human-computer interaction.
 
 # Project Overview
-This project aims to train a Neural Language Processing (NLP) model specifically for English, enhancing speech recognition systems' capabilities for more seamless interaction between humans and machines. Our approach focuses on developing models that can accurately identify and process English language nuances from audio inputs.
+This project aims to develop a system capable of identifying human emotions from audio inputs, leveraging deep learning models for accurate emotion recognition. Our approach focuses on training models that can accurately identify a range of emotions, enhancing applications in areas such as interactive voice response systems, mental health assessment, and virtual assistants.
 
 # Data
-Our dataset comprises audio clips selected to represent a wide range of linguistic nuances within the English language. These recordings will serve as the primary training material for our NLP model, focusing on achieving high precision in language recognition for improved speech processing.
+Our dataset comprises audio clips expressing a wide range of emotions. These recordings serve as the primary training material for our models, focusing on achieving high precision in emotion recognition for improved human-computer interaction.
 
 # Algorithms
-We intend to explore two advanced algorithmic approaches for English language identification:
+We explore three advanced algorithmic approaches for emotion recognition:
 
-Recurrent Neural Network with Long Short-Term Memory (RNN with LSTM)
+Convolutional Neural Network (CNN): Known for its robust feature extraction capabilities, particularly useful for identifying patterns in audio spectrograms that correspond to different emotions.
 
-Suited for sequential data, making it highly effective for tasks requiring an understanding of linguistic structures and temporal relationships in spoken English.
-Convolutional Neural Network with Long Short-Term Memory (CNN with LSTM)
+Long Short-Term Memory (LSTM): A type of Recurrent Neural Network (RNN) suited for sequential data, making it highly effective for tasks requiring an understanding of temporal relationships in audio data.
 
-Combines CNN's robust feature extraction capabilities with LSTM's adeptness at sequence modeling, offering a comprehensive solution for language identification challenges across various accents and contexts.
-Justification for Choosing CNN with LSTM
+Support Vector Machine (SVM): A machine learning model that finds the optimal hyperplane for classifying data points into different categories, used here to classify extracted features into emotion categories.
 
-CNNs are chosen for their unparalleled pattern recognition abilities, crucial for identifying the unique phonetic patterns and intonations of the English language. Their efficiency with large datasets is particularly advantageous for our project, which relies on extensive audio samples to cover a broad spectrum of linguistic nuances.
+# Justificaiton for Model Choices
+CNNs are chosen for their unparalleled pattern recognition abilities, crucial for processing and identifying the complex features within audio data that signify different emotions.
+
+LSTMs are utilized for their proficiency in handling sequential and time-series data, essential for capturing the temporal dynamics in speech that convey emotional states.
+
+SVMs provide a reliable classification technique that complements deep learning models by offering a different approach to feature space partitioning, which is useful for fine-grained emotion classification.
 
 # Timeline
 
