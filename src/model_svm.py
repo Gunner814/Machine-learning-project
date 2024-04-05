@@ -27,7 +27,7 @@ class SVM_Model:
         self.grid.fit(x_train_svm, y_train_svm)
         self.model = self.grid.best_estimator_
 
-    def Evaluate(self):
+    def Evaluate(self, encoder):
         x_test_svm = self.x_test.reshape(self.x_test.shape[0], -1)
         y_pred_svm = self.model.predict(x_test_svm)
         # Calculate accuracy
@@ -36,6 +36,14 @@ class SVM_Model:
         # Classification report
         print("SVM Classification Report:")
         print(classification_report(np.argmax(self.y_test, axis=1), y_pred_svm))
+        # y_true = encoder.inverse_transform(self.y_test)
+        # y_pred = encoder.inverse_transform(y_pred_svm.reshape(-1, 1))
+
+        # with open('../data/results/result_svm_model.txt', 'w') as f:
+        #     f.write(f"LSTM Model Accuracy: {self.score:.2f}%\n")
+        #     for i in range(len(y_true)):
+        #         f.write(f"Expected: {y_true[i][0]}, Predicted: {y_pred[i][0]}\n")
+        #     f.close()
 
     def Save(self, save_dir):
         dump(self.model, save_dir)

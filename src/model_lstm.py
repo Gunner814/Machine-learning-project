@@ -34,6 +34,11 @@ class LSTM_Model:
         print(df.head())
         print(classification_report(y_test, y_pred))
         print("LSTM Model's Accuracy: " , self.score, "%")
+        with open('../data/results/result_lstm_model.txt', 'w') as f:
+            f.write(f"LSTM Model Accuracy: {self.score:.2f}%\n")
+            for i in range(len(y_test)):
+                f.write(f"Expected: {y_test[i][0]}, Predicted: {y_pred[i][0]}\n")
+            f.close()
 
     def Save(self, save_dir):
         self.model.save(save_dir)

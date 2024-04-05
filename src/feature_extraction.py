@@ -53,11 +53,3 @@ def get_features(path):
     res3 = extract_features(data_stretch_pitch, sample_rate)
     result = np.vstack((result, res3))  # stacking vertically
     return result
-
-# # Example usage
-# if __name__ == "__main__":
-#     # Assuming you have a path to an audio file
-#     path = '../data/emotions_clips/audio_speech_actors_01-24/'
-
-#     features = get_features(path)
-#     print(features.shape)
